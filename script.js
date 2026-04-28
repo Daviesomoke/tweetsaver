@@ -8,8 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Theme toggle
     const themeToggle = document.getElementById('theme-toggle');
     const html = document.documentElement;
-    
-    // Theme logic is handled by CSS classes; no icon change needed.
 
     themeToggle.addEventListener('click', () => {
         const current = html.getAttribute('data-theme');
@@ -18,9 +16,39 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('theme', next);
     });
 
-    // Load saved theme
     const savedTheme = localStorage.getItem('theme') || 'dark';
     html.setAttribute('data-theme', savedTheme);
+
+    // Mobile navigation toggle
+    const navToggle = document.querySelector('.nav-toggle');
+    const navMenu = document.getElementById('nav-menu');
+
+    if (navToggle && navMenu) {
+        navToggle.addEventListener('click', () => {
+            const expanded = navToggle.getAttribute('aria-expanded') === 'true' || false;
+            navToggle.setAttribute('aria-expanded', !expanded);
+            navMenu.classList.toggle('active');
+            document.body.style.overflow = expanded ? '' : 'hidden';
+        });
+
+        // Close menu when a link is clicked
+        navMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+                navToggle.setAttribute('aria-expanded', 'false');
+                document.body.style.overflow = '';
+            });
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!navToggle.contains(e.target) && !navMenu.contains(e.target)) {
+                navMenu.classList.remove('active');
+                navToggle.setAttribute('aria-expanded', 'false');
+                document.body.style.overflow = '';
+            }
+        });
+    }
 
     // URL validation
     const isValidTweetUrl = (url) => {
@@ -29,6 +57,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const form = document.getElementById('download-form');
+    if (!form) return; // Not on homepage
+
     const urlInput = document.getElementById('tweet-url');
     const errorMsg = document.getElementById('error-msg');
     const submitBtn = document.getElementById('submit-btn');
@@ -43,7 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentMediaData = null;
 
-    // Copy link
     copyLinkBtn?.addEventListener('click', async () => {
         try {
             await navigator.clipboard.writeText(urlInput.value);
@@ -53,7 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Quality change -> update download link
     qualityDropdown?.addEventListener('change', (e) => {
         if (currentMediaData && currentMediaData.media) {
             const selected = currentMediaData.media.find(m => m.quality === e.target.value);
@@ -111,17 +139,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Sort by quality: highest first for video
         const sortedMedia = [...data.media].sort((a, b) => parseInt(b.quality) - parseInt(a.quality));
 
-        // Populate thumbnail
-        if (data.thumbnail) {
-            thumbnailImg.src = data.thumbnail;
-        } else {
-            thumbnailImg.src = 'https://placehold.co/480x270?text=No+Preview';
-        }
+        thumbnailImg.src = data.thumbnail || 'https://placehold.co/480x270?text=No+Preview';
 
-        // Clear quality dropdown
         qualityDropdown.innerHTML = '';
         sortedMedia.forEach((m) => {
             const option = document.createElement('option');
@@ -130,12 +151,10 @@ document.addEventListener('DOMContentLoaded', () => {
             qualityDropdown.appendChild(option);
         });
 
-        // Set default download link
         if (sortedMedia.length > 0) {
             downloadBtn.href = sortedMedia[0].url;
         }
 
-        // Show multiple media list if more than 1
         if (sortedMedia.length > 1) {
             const listCard = document.createElement('div');
             listCard.className = 'card';
@@ -152,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Contact form dummy (on contact page)
+    // Contact form dummy
     const contactForm = document.getElementById('contact-form');
     if (contactForm) {
         contactForm.addEventListener('submit', (e) => {

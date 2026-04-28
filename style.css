@@ -78,6 +78,7 @@ body {
     letter-spacing: -0.5px;
 }
 
+/* Navigation */
 .nav-links {
     display: flex;
     gap: 1.2rem;
@@ -94,6 +95,47 @@ body {
     color: var(--accent);
 }
 
+/* Hamburger button */
+.nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    z-index: 20;
+}
+
+.hamburger,
+.hamburger::before,
+.hamburger::after {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background: var(--text);
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.hamburger {
+    position: relative;
+}
+
+.hamburger::before,
+.hamburger::after {
+    content: '';
+    position: absolute;
+    left: 0;
+}
+
+.hamburger::before {
+    top: -8px;
+}
+
+.hamburger::after {
+    top: 8px;
+}
+
+/* Theme toggle */
 .theme-toggle {
     background: none;
     border: none;
@@ -115,7 +157,6 @@ body {
     background: var(--border);
 }
 
-/* Hide/show correct icon based on theme */
 .theme-icon-dark {
     display: inline;
 }
@@ -130,6 +171,41 @@ body {
 
 [data-theme="light"] .theme-icon-light {
     display: inline;
+}
+
+/* Mobile nav */
+@media (max-width: 600px) {
+    .nav-toggle {
+        display: block;
+    }
+
+    .nav-links {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 70%;
+        max-width: 300px;
+        height: 100vh;
+        background: var(--surface);
+        flex-direction: column;
+        padding: 5rem 2rem 2rem;
+        gap: 1.5rem;
+        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+        transition: right 0.3s ease;
+        z-index: 15;
+    }
+
+    .nav-links.active {
+        right: 0;
+    }
+
+    .nav-links a {
+        font-size: 1.2rem;
+    }
+
+    .header-content {
+        justify-content: space-between;
+    }
 }
 
 /* Hero */
