@@ -4,8 +4,8 @@
 
 
 
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Theme toggle
     const themeToggle = document.getElementById('theme-toggle');
     const html = document.documentElement;
 
@@ -31,7 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.style.overflow = expanded ? '' : 'hidden';
         });
 
-        // Close menu when a link is clicked
         navMenu.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', () => {
                 navMenu.classList.remove('active');
@@ -40,7 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // Close menu when clicking outside
         document.addEventListener('click', (e) => {
             if (!navToggle.contains(e.target) && !navMenu.contains(e.target)) {
                 navMenu.classList.remove('active');
@@ -50,14 +48,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // URL validation
+    // URL validation (only on homepage)
+    const form = document.getElementById('download-form');
+    if (!form) return;
+
     const isValidTweetUrl = (url) => {
         const pattern = /^https?:\/\/(www\.)?(twitter\.com|x\.com)\/[a-zA-Z0-9_]+\/status\/\d+(\?.*)?$/;
         return pattern.test(url);
     };
-
-    const form = document.getElementById('download-form');
-    if (!form) return; // Not on homepage
 
     const urlInput = document.getElementById('tweet-url');
     const errorMsg = document.getElementById('error-msg');

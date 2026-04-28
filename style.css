@@ -5,18 +5,21 @@
 
 
 
+
 /* ---------- CSS Variables & Theme ---------- */
 :root {
     --bg: #0f0f0f;
     --surface: #1a1a1a;
     --text: #f0f0f0;
     --text-secondary: #b0b0b0;
-    --accent: #10b981;         /* Emerald green */
+    --accent: #10b981;
     --accent-hover: #059669;
     --error: #ef4444;
     --border: #333;
     --radius: 0.75rem;
     --transition: 0.2s ease;
+    --icon-color: #fff;
+    /* icon colour for dark mode */
 }
 
 [data-theme="light"] {
@@ -28,6 +31,8 @@
     --accent-hover: #065f46;
     --error: #dc2626;
     --border: #e5e7eb;
+    --icon-color: #222;
+    /* icon colour for light mode */
 }
 
 * {
@@ -76,14 +81,13 @@ body {
     color: var(--text);
     text-decoration: none;
     letter-spacing: -0.5px;
-    margin-right: auto;  /* keeps logo on left */
+    margin-right: auto;
 }
 
-/* Navigation links (desktop) */
 .nav-links {
     display: flex;
     gap: 1.2rem;
-    margin-right: 1.5rem; /* space before the action buttons */
+    margin-right: 1.5rem;
 }
 
 .nav-links a {
@@ -97,14 +101,13 @@ body {
     color: var(--accent);
 }
 
-/* Group for hamburger + theme toggle */
 .header-actions {
     display: flex;
     align-items: center;
     gap: 0.6rem;
 }
 
-/* Hamburger button – hidden on desktop */
+/* Hamburger button */
 .nav-toggle {
     display: none;
     background: none;
@@ -144,37 +147,38 @@ body {
     top: 8px;
 }
 
-/* Theme toggle */
+/* Theme toggle button – now with SVG icon */
 .theme-toggle {
     background: none;
     border: none;
-    font-size: 1.3rem;
     cursor: pointer;
-    color: var(--text);
     padding: 0.3rem;
     border-radius: 50%;
     transition: background var(--transition);
-    width: 2.2rem;
-    height: 2.2rem;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 2.2rem;
+    height: 2.2rem;
 }
 
 .theme-toggle:hover {
     background: var(--border);
 }
 
-.theme-icon-dark { display: inline; }
-.theme-icon-light { display: none; }
-
-[data-theme="light"] .theme-icon-dark { display: none; }
-[data-theme="light"] .theme-icon-light { display: inline; }
+/* The icon wrapper – uses custom colour */
+.icon-toggle {
+    color: var(--icon-color);
+    transition: color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
 /* Mobile navigation */
 @media (max-width: 600px) {
     .nav-toggle {
-        display: block;   /* show hamburger */
+        display: block;
     }
 
     .nav-links {
@@ -188,10 +192,10 @@ body {
         flex-direction: column;
         padding: 5rem 2rem 2rem;
         gap: 1.5rem;
-        box-shadow: -5px 0 15px rgba(0,0,0,0.3);
+        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
         transition: right 0.3s ease;
         z-index: 15;
-        margin-right: 0; /* reset desktop margin */
+        margin-right: 0;
     }
 
     .nav-links.active {
@@ -200,11 +204,6 @@ body {
 
     .nav-links a {
         font-size: 1.2rem;
-    }
-
-    /* Keep header-actions on the right, now contains both buttons */
-    .header-actions {
-        /* already flex, just ensure proper alignment */
     }
 }
 
@@ -235,11 +234,10 @@ body {
     border-radius: var(--radius);
     padding: 1.5rem;
     margin-bottom: 1.5rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transition: transform var(--transition);
 }
 
-/* Downloader */
 .downloader-card {
     text-align: center;
 }
@@ -294,14 +292,19 @@ button:hover,
     transform: translateY(-1px);
 }
 
-.btn-primary { background: var(--accent); }
-.btn-secondary { background: #6b7280; }
+.btn-primary {
+    background: var(--accent);
+}
+
+.btn-secondary {
+    background: #6b7280;
+}
 
 .spinner {
     display: inline-block;
     width: 1.2rem;
     height: 1.2rem;
-    border: 2px solid rgba(255,255,255,0.3);
+    border: 2px solid rgba(255, 255, 255, 0.3);
     border-top-color: #fff;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
@@ -311,7 +314,11 @@ button:hover,
     display: none !important;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
 
 .error-message {
     color: var(--error);
@@ -383,7 +390,7 @@ button:hover,
     text-align: center;
 }
 
-/* Ad placeholder (bottom) */
+/* Ad placeholder */
 .ad-banner-placeholder {
     text-align: center;
     background: #2d2d2d;
@@ -454,8 +461,13 @@ button:hover,
 
 /* Responsive */
 @media (max-width: 600px) {
-    .hero h1 { font-size: 1.8rem; }
-    .input-group { flex-direction: column; }
+    .hero h1 {
+        font-size: 1.8rem;
+    }
+
+    .input-group {
+        flex-direction: column;
+    }
 }
 
 /* Smooth animations */
