@@ -1,0 +1,109 @@
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Download videos, GIFs and images from X (Twitter) posts. Free, fast and no account required.">
+    <meta name="keywords" content="Twitter video downloader, X downloader, save tweets, tweet video, GIF downloader">
+    <meta name="author" content="TweetSaver">
+    <meta property="og:title" content="TweetSaver - X / Twitter Video Downloader">
+    <meta property="og:description" content="Download any video, GIF or image from X posts instantly.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tweetsaver.example.com">
+    <meta property="og:image" content="https://tweetsaver.example.com/og-image.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>TweetSaver - Download X (Twitter) Videos & Media</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <header class="main-header">
+        <div class="container header-content">
+            <a href="/" class="logo">TweetSaver</a>
+            <nav class="nav-links">
+                <a href="/">Home</a>
+                <a href="/about.html">About</a>
+                <a href="/contact.html">Contact</a>
+            </nav>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle light/dark theme">
+                <span class="theme-icon-dark">☀️</span>
+                <span class="theme-icon-light">🌙</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <h1>Download X / Twitter Videos & Media</h1>
+            <p class="subtitle">Paste a tweet or X post link and save videos, GIFs and photos in seconds.</p>
+        </section>
+
+        <section class="downloader-card card">
+            <form id="download-form">
+                <div class="input-group">
+                    <input type="url" id="tweet-url" placeholder="https://x.com/user/status/123456789" required>
+                    <button type="submit" id="submit-btn">
+                        <span class="btn-text">Download</span>
+                        <span class="spinner hidden"></span>
+                    </button>
+                </div>
+                <div class="error-message" id="error-msg"></div>
+            </form>
+        </section>
+
+        <section id="results-section" class="hidden">
+            <div class="media-preview card" id="media-preview-card">
+                <div class="preview-grid">
+                    <div class="thumbnail-wrapper">
+                        <img id="thumbnail-img" src="" alt="Thumbnail preview">
+                        <div class="video-actions">
+                            <button id="copy-link-btn" title="Copy link" class="btn-secondary">
+                                Copy Link
+                            </button>
+                            <a id="download-btn" class="btn btn-primary" href="#" download>Download</a>
+                        </div>
+                    </div>
+                    <div class="quality-selector" id="quality-selector">
+                        <label>Available qualities:</label>
+                        <select id="quality-dropdown"></select>
+                    </div>
+                </div>
+            </div>
+            <ul id="multiple-media-list" class="media-list"></ul>
+        </section>
+
+        <!-- Affiliate Banner -->
+        <div class="affiliate-banner card">
+            <p><strong>Recommended Tool:</strong> Edit your videos with <a href="#">ProVideoSuite</a> — 30% off today!
+            </p>
+        </div>
+
+        <!-- Ad Placement (moved to bottom) -->
+        <div class="ad-banner-placeholder">
+            <span>Advertisement</span>
+            <div class="ad-box">728 × 90</div>
+        </div>
+    </main>
+
+    <footer class="main-footer container">
+        <div class="footer-links">
+            <a href="/privacy.html">Privacy</a>
+            <a href="/terms.html">Terms</a>
+            <a href="/about.html">About</a>
+            <a href="/contact.html">Contact</a>
+        </div>
+        <p>© 2025 TweetSaver — Not affiliated with X Corp.</p>
+    </footer>
+
+    <script src="/script.js"></script>
+</body>
+
+</html>
