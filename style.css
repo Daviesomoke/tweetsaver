@@ -4,14 +4,14 @@
 
 
 
+
 /* ---------- CSS Variables & Theme ---------- */
 :root {
     --bg: #0f0f0f;
     --surface: #1a1a1a;
     --text: #f0f0f0;
     --text-secondary: #b0b0b0;
-    --accent: #10b981;
-    /* Emerald green */
+    --accent: #10b981;         /* Emerald green */
     --accent-hover: #059669;
     --error: #ef4444;
     --border: #333;
@@ -76,12 +76,14 @@ body {
     color: var(--text);
     text-decoration: none;
     letter-spacing: -0.5px;
+    margin-right: auto;  /* keeps logo on left */
 }
 
-/* Navigation */
+/* Navigation links (desktop) */
 .nav-links {
     display: flex;
     gap: 1.2rem;
+    margin-right: 1.5rem; /* space before the action buttons */
 }
 
 .nav-links a {
@@ -95,7 +97,14 @@ body {
     color: var(--accent);
 }
 
-/* Hamburger button */
+/* Group for hamburger + theme toggle */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+/* Hamburger button – hidden on desktop */
 .nav-toggle {
     display: none;
     background: none;
@@ -145,7 +154,6 @@ body {
     padding: 0.3rem;
     border-radius: 50%;
     transition: background var(--transition);
-    position: relative;
     width: 2.2rem;
     height: 2.2rem;
     display: flex;
@@ -157,26 +165,16 @@ body {
     background: var(--border);
 }
 
-.theme-icon-dark {
-    display: inline;
-}
+.theme-icon-dark { display: inline; }
+.theme-icon-light { display: none; }
 
-.theme-icon-light {
-    display: none;
-}
+[data-theme="light"] .theme-icon-dark { display: none; }
+[data-theme="light"] .theme-icon-light { display: inline; }
 
-[data-theme="light"] .theme-icon-dark {
-    display: none;
-}
-
-[data-theme="light"] .theme-icon-light {
-    display: inline;
-}
-
-/* Mobile nav */
+/* Mobile navigation */
 @media (max-width: 600px) {
     .nav-toggle {
-        display: block;
+        display: block;   /* show hamburger */
     }
 
     .nav-links {
@@ -190,9 +188,10 @@ body {
         flex-direction: column;
         padding: 5rem 2rem 2rem;
         gap: 1.5rem;
-        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+        box-shadow: -5px 0 15px rgba(0,0,0,0.3);
         transition: right 0.3s ease;
         z-index: 15;
+        margin-right: 0; /* reset desktop margin */
     }
 
     .nav-links.active {
@@ -203,8 +202,9 @@ body {
         font-size: 1.2rem;
     }
 
-    .header-content {
-        justify-content: space-between;
+    /* Keep header-actions on the right, now contains both buttons */
+    .header-actions {
+        /* already flex, just ensure proper alignment */
     }
 }
 
@@ -235,7 +235,7 @@ body {
     border-radius: var(--radius);
     padding: 1.5rem;
     margin-bottom: 1.5rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     transition: transform var(--transition);
 }
 
@@ -294,19 +294,14 @@ button:hover,
     transform: translateY(-1px);
 }
 
-.btn-primary {
-    background: var(--accent);
-}
-
-.btn-secondary {
-    background: #6b7280;
-}
+.btn-primary { background: var(--accent); }
+.btn-secondary { background: #6b7280; }
 
 .spinner {
     display: inline-block;
     width: 1.2rem;
     height: 1.2rem;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(255,255,255,0.3);
     border-top-color: #fff;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
@@ -316,11 +311,7 @@ button:hover,
     display: none !important;
 }
 
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .error-message {
     color: var(--error);
@@ -392,7 +383,7 @@ button:hover,
     text-align: center;
 }
 
-/* Ad placeholder */
+/* Ad placeholder (bottom) */
 .ad-banner-placeholder {
     text-align: center;
     background: #2d2d2d;
@@ -463,13 +454,8 @@ button:hover,
 
 /* Responsive */
 @media (max-width: 600px) {
-    .hero h1 {
-        font-size: 1.8rem;
-    }
-
-    .input-group {
-        flex-direction: column;
-    }
+    .hero h1 { font-size: 1.8rem; }
+    .input-group { flex-direction: column; }
 }
 
 /* Smooth animations */
