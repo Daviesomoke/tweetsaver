@@ -4,29 +4,47 @@
 
 
 
-
 document.addEventListener('DOMContentLoaded', () => {
+
+    // =============================================================
+    // API URL CONFIGURATION
+    // -------------------------------------------------------------
+    // Since Flask serves both the frontend AND the backend from the
+    // same server (on Render), you can always use a relative path.
+    // '/api/download' works on localhost AND in production.
+    //
+    // Only change API_URL if you ever move the frontend to a
+    // separate host (e.g. Vercel). In that case, replace the empty
+    // string below with your full Render URL:
+    //   const BACKEND = 'https://YOUR-APP.onrender.com';
+    // =============================================================
+    const BACKEND = '';   // <-- leave empty: same server serves front + back
+    const API_URL = `${BACKEND}/api/download`;
+
+    // Optional: set this only if you enabled API_KEY on the backend
+    const API_KEY = '';
+
+    // ----- Theme toggle -----
     const themeToggle = document.getElementById('theme-toggle');
     const html = document.documentElement;
-
-    themeToggle.addEventListener('click', () => {
-        const current = html.getAttribute('data-theme');
-        const next = current === 'dark' ? 'light' : 'dark';
-        html.setAttribute('data-theme', next);
-        localStorage.setItem('theme', next);
-    });
 
     const savedTheme = localStorage.getItem('theme') || 'dark';
     html.setAttribute('data-theme', savedTheme);
 
-    // Mobile navigation toggle
+    themeToggle?.addEventListener('click', () => {
+        const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+    });
+
+    // ----- Mobile navigation -----
     const navToggle = document.querySelector('.nav-toggle');
     const navMenu = document.getElementById('nav-menu');
 
     if (navToggle && navMenu) {
         navToggle.addEventListener('click', () => {
-            const expanded = navToggle.getAttribute('aria-expanded') === 'true' || false;
-            navToggle.setAttribute('aria-expanded', !expanded);
+            const expanded = navToggle.getAttribute('aria-expanded') === 'true';
+            navToggle.setAttribute('aria-expanded', String(!expanded));
             navMenu.classList.toggle('active');
             document.body.style.overflow = expanded ? '' : 'hidden';
         });
@@ -48,45 +66,39 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // URL validation (only on homepage)
+    // ----- Download form (homepage only) -----
     const form = document.getElementById('download-form');
-    if (!form) return;
+    if (!form) return;   // not on homepage — stop here
 
-    const isValidTweetUrl = (url) => {
-        const pattern = /^https?:\/\/(www\.)?(twitter\.com|x\.com)\/[a-zA-Z0-9_]+\/status\/\d+(\?.*)?$/;
-        return pattern.test(url);
-    };
+    const isValidTweetUrl = (url) =>
+        /^https?:\/\/(www\.)?(twitter\.com|x\.com)\/[a-zA-Z0-9_]+\/status\/\d+(\?.*)?$/.test(url);
 
-    const urlInput = document.getElementById('tweet-url');
-    const errorMsg = document.getElementById('error-msg');
-    const submitBtn = document.getElementById('submit-btn');
-    const spinner = submitBtn.querySelector('.spinner');
-    const btnText = submitBtn.querySelector('.btn-text');
+    const urlInput       = document.getElementById('tweet-url');
+    const errorMsg       = document.getElementById('error-msg');
+    const submitBtn      = document.getElementById('submit-btn');
+    const spinner        = submitBtn.querySelector('.spinner');
+    const btnText        = submitBtn.querySelector('.btn-text');
     const resultsSection = document.getElementById('results-section');
-    const thumbnailImg = document.getElementById('thumbnail-img');
+    const thumbnailImg   = document.getElementById('thumbnail-img');
     const qualityDropdown = document.getElementById('quality-dropdown');
-    const downloadBtn = document.getElementById('download-btn');
-    const copyLinkBtn = document.getElementById('copy-link-btn');
-    const multipleMediaList = document.getElementById('multiple-media-list');
+    const downloadBtn    = document.getElementById('download-btn');
+    const copyLinkBtn    = document.getElementById('copy-link-btn');
 
     let currentMediaData = null;
 
     copyLinkBtn?.addEventListener('click', async () => {
         try {
             await navigator.clipboard.writeText(urlInput.value);
-            alert('Link copied!');
+            copyLinkBtn.textContent = 'Copied!';
+            setTimeout(() => { copyLinkBtn.textContent = 'Copy Link'; }, 2000);
         } catch {
-            alert('Failed to copy');
+            alert('Could not copy — please copy the URL manually.');
         }
     });
 
     qualityDropdown?.addEventListener('change', (e) => {
-        if (currentMediaData && currentMediaData.media) {
-            const selected = currentMediaData.media.find(m => m.quality === e.target.value);
-            if (selected) {
-                downloadBtn.href = selected.url;
-            }
-        }
+        const selected = currentMediaData?.media?.find(m => m.quality === e.target.value);
+        if (selected) downloadBtn.href = selected.url;
     });
 
     form.addEventListener('submit', async (e) => {
@@ -94,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const url = urlInput.value.trim();
 
         if (!isValidTweetUrl(url)) {
-            errorMsg.textContent = 'Please enter a valid X/Twitter post URL (e.g., https://x.com/user/status/123456)';
+            errorMsg.textContent = 'Please enter a valid X / Twitter post URL (e.g., https://x.com/user/status/123456)';
             return;
         }
 
@@ -105,18 +117,18 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsSection.classList.add('hidden');
 
         try {
-            const response = await fetch('/api/download', {
+            const headers = { 'Content-Type': 'application/json' };
+            if (API_KEY) headers['X-API-Key'] = API_KEY;
+
+            const response = await fetch(API_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url })
+                headers,
+                body: JSON.stringify({ url }),
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to fetch media');
-            }
-
             const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Failed to fetch media');
+
             currentMediaData = data;
             renderResults(data);
         } catch (err) {
@@ -129,7 +141,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function renderResults(data) {
-        multipleMediaList.innerHTML = '';
+        // Clear any previous extra media cards
+        document.querySelectorAll('.extra-media-card').forEach(el => el.remove());
         resultsSection.classList.remove('hidden');
 
         if (!data.media || data.media.length === 0) {
@@ -145,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sortedMedia.forEach((m) => {
             const option = document.createElement('option');
             option.value = m.quality;
-            option.textContent = `${m.quality}${m.quality.includes('p') ? '' : 'p'} - ${m.type.toUpperCase()}`;
+            option.textContent = `${m.quality}${m.quality.includes('p') ? '' : 'p'} — ${m.type.toUpperCase()}`;
             qualityDropdown.appendChild(option);
         });
 
@@ -155,13 +168,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (sortedMedia.length > 1) {
             const listCard = document.createElement('div');
-            listCard.className = 'card';
-            listCard.innerHTML = `<h3>All Media</h3>`;
+            listCard.className = 'card extra-media-card';
+            listCard.innerHTML = '<h3>All Available Qualities</h3>';
             const ul = document.createElement('ul');
             ul.className = 'media-list';
             sortedMedia.forEach(m => {
                 const li = document.createElement('li');
-                li.innerHTML = `<a href="${m.url}" download>${m.quality}p</a>`;
+                li.innerHTML = `<a href="${m.url}" download>${m.quality}${m.quality.includes('p') ? '' : 'p'} — ${m.type}</a>`;
                 ul.appendChild(li);
             });
             listCard.appendChild(ul);
@@ -169,12 +182,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Contact form dummy
+    // ----- Contact form (demo) -----
     const contactForm = document.getElementById('contact-form');
-    if (contactForm) {
-        contactForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            alert('Thanks for your message! (demo)');
-        });
-    }
+    contactForm?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        alert('Thanks for your message! (demo — no emails are sent yet)');
+        contactForm.reset();
+    });
 });
