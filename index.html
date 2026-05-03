@@ -4,31 +4,43 @@
 
 
 
-
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description"
-        content="Download videos, GIFs and images from X (Twitter) posts. Free, fast and no account required.">
+    <meta name="description" content="Download videos, GIFs and images from X (Twitter) posts. Free, fast and no account required.">
     <meta name="keywords" content="Twitter video downloader, X downloader, save tweets, tweet video, GIF downloader">
-    <meta name="author" content="TweetSaver">
-    <meta property="og:title" content="TweetSaver - X / Twitter Video Downloader">
-    <meta property="og:description" content="Download any video, GIF or image from X posts instantly.">
+    <meta name="author" content="John Davies Omoke">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="VideoXSaver - X / Twitter Video Downloader">
+    <meta property="og:description" content="Download any video, GIF or image from X posts instantly. Free and no account needed.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://tweetsaver.example.com">
-    <meta property="og:image" content="https://tweetsaver.example.com/og-image.jpg">
+    <meta property="og:url" content="https://videosxsaver.com">
+    <meta property="og:image" content="https://videosxsaver.com/og-image.jpg">
+
+    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <title>TweetSaver - Download X (Twitter) Videos & Media</title>
+    <meta name="twitter:site" content="@theparrotboss">
+    <meta name="twitter:title" content="VideoXSaver - X / Twitter Video Downloader">
+    <meta name="twitter:description" content="Download any video, GIF or image from X posts instantly.">
+    <meta name="twitter:image" content="https://videosxsaver.com/og-image.jpg">
+
+    <title>VideoXSaver - Download X (Twitter) Videos & Media</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" href="/favicon.ico">
+
     <link rel="stylesheet" href="/style.css">
 </head>
 
 <body>
     <header class="main-header">
         <div class="container header-content">
-            <a href="/" class="logo">TweetSaver</a>
+            <a href="/" class="logo">VideoXSaver</a>
             <nav class="nav-links" id="nav-menu">
                 <a href="/">Home</a>
                 <a href="/about.html">About</a>
@@ -40,8 +52,7 @@
                 </button>
                 <button id="theme-toggle" class="theme-toggle" aria-label="Toggle light/dark theme">
                     <span class="icon-toggle">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="5"></circle>
                             <line x1="12" y1="1" x2="12" y2="3"></line>
                             <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -59,7 +70,6 @@
     </header>
 
     <main class="container">
-        <!-- rest of main content unchanged -->
         <section class="hero">
             <h1>Download X / Twitter Videos & Media</h1>
             <p class="subtitle">Paste a tweet or X post link and save videos, GIFs and photos in seconds.</p>
@@ -84,9 +94,7 @@
                     <div class="thumbnail-wrapper">
                         <img id="thumbnail-img" src="" alt="Thumbnail preview">
                         <div class="video-actions">
-                            <button id="copy-link-btn" title="Copy link" class="btn-secondary">
-                                Copy Link
-                            </button>
+                            <button id="copy-link-btn" class="btn-secondary">Copy Link</button>
                             <a id="download-btn" class="btn btn-primary" href="#" download>Download</a>
                         </div>
                     </div>
@@ -98,11 +106,6 @@
             </div>
             <ul id="multiple-media-list" class="media-list"></ul>
         </section>
-
-        <div class="affiliate-banner card">
-            <p><strong>Recommended Tool:</strong> Edit your videos with <a href="#">ProVideoSuite</a> — 30% off today!
-            </p>
-        </div>
 
         <div class="ad-banner-placeholder">
             <span>Advertisement</span>
@@ -117,7 +120,7 @@
             <a href="/about.html">About</a>
             <a href="/contact.html">Contact</a>
         </div>
-        <p>© 2025 TweetSaver — Not affiliated with X Corp.</p>
+        <p>© 2025 VideoXSaver — Not affiliated with X Corp. &nbsp;|&nbsp; <a href="https://x.com/theparrotboss" target="_blank" rel="noopener">@theparrotboss</a></p>
     </footer>
 
     <script src="/script.js"></script>

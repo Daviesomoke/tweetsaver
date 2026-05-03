@@ -3,7 +3,7 @@
 
 
 
-
-flask==3.0.0
+flask==2.2.5
 flask-cors==4.0.0
-yt-dlp==2024.11.04
+yt-dlp>=2024.1.1
+gunicorn==21.2.0

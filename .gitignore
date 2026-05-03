@@ -4,19 +4,54 @@
 
 
 
-# Python
-__pycache__/
-*.pyc
-venv/
-.env
-
-# OS
-.DS_Store
-Thumbs.db
-
-# yt-dlp
+# === NEVER PUSH THESE ===
+# Twitter/X authentication cookies — treat like a password
 cookies.txt
+*.txt.bak
 
-# IDE
+# Environment variable files — contain secrets
+.env
+.env.local
+.env.production
+.env.*
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# === OS files ===
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# === IDE / Editor ===
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
+
+# === Logs ===
+*.log
+logs/
+
+# === Misc ===
+*.bak
+*.tmp
