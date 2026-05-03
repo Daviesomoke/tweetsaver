@@ -11,9 +11,11 @@ import logging
 from time import time
 from collections import defaultdict
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response, stream_with_context
 from flask_cors import CORS
 import yt_dlp
+import requests
+from http.cookiejar import MozillaCookieJar
 
 # ---------- App setup ----------
 app = Flask(__name__, static_folder='.', static_url_path='')
@@ -35,7 +37,6 @@ API_KEY = os.environ.get('API_KEY', '')        # optional — leave empty to dis
 COOKIE_CONTENT = os.environ.get('COOKIE_CONTENT', '')
 
 # If the cookie file doesn't exist but we have the content as an env var, write it.
-# This is how you supply cookies.txt on Render without uploading the file to GitHub.
 if not os.path.exists(COOKIE_FILE) and COOKIE_CONTENT:
     with open(COOKIE_FILE, 'w', encoding='utf-8') as f:
         f.write(COOKIE_CONTENT)
@@ -59,6 +60,16 @@ def is_rate_limited(ip: str) -> bool:
 def extract_tweet_id(url: str) -> str | None:
     match = re.search(r'/status/(\d+)', url)
     return match.group(1) if match else None
+
+
+def load_cookies():
+    """Load Netscape cookies into a requests Session for proxy downloads."""
+    session = requests.Session()
+    if os.path.exists(COOKIE_FILE):
+        cj = MozillaCookieJar(COOKIE_FILE)
+        cj.load(ignore_discard=True, ignore_expires=True)
+        session.cookies.update(cj)
+    return session
 
 
 def fetch_media_info_real(url: str) -> dict:
@@ -154,6 +165,50 @@ def download():
     except Exception as e:
         app.logger.error('Download error: %s', e)
         return jsonify({'error': 'Could not retrieve media. Please try again later.'}), 500
+
+
+@app.route('/api/proxy_download')
+def proxy_download():
+    """Stream a video through the server using cookies, so the browser never touches
+       video.twimg.com directly."""
+    video_url = request.args.get('video_url')
+    filename = request.args.get('filename', 'twitter_video.mp4')
+
+    if not video_url:
+        return jsonify({'error': 'Missing video_url parameter'}), 400
+
+    try:
+        session = load_cookies()
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Referer': 'https://twitter.com/',
+        }
+        resp = session.get(video_url, headers=headers, stream=True, timeout=30)
+        resp.raise_for_status()
+
+        # Try to pick a better filename from the Content-Disposition header
+        cd = resp.headers.get('Content-Disposition', '')
+        if 'filename=' in cd:
+            import re as regex
+            fname = regex.findall('filename="?([^"]+)"?', cd)
+            if fname:
+                filename = fname[0]
+
+        def generate():
+            for chunk in resp.iter_content(chunk_size=8192):
+                if chunk:
+                    yield chunk
+
+        return Response(
+            stream_with_context(generate()),
+            headers={
+                'Content-Disposition': f'attachment; filename="{filename}"',
+                'Content-Type': resp.headers.get('Content-Type', 'application/octet-stream'),
+            }
+        )
+    except Exception as e:
+        app.logger.error('Proxy error: %s', e)
+        return jsonify({'error': 'Failed to download video. The link may have expired.'}), 500
 
 
 # ---------- Health check (useful for Render) ----------

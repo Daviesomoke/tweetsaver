@@ -8,9 +8,10 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // ── API ─────────────────────────────────────────────────────────────────
-    // Relative path works on both localhost and Render (same server serves
-    // the frontend AND handles /api/download).
+    // Relative paths work on both localhost and Render (same server serves
+    // the frontend AND handles /api/download and /api/proxy_download).
     const API_URL = '/api/download';
+    const PROXY_URL = '/api/proxy_download';
     const API_KEY = '';   // set only if you enabled API_KEY on the backend
 
     // ── Theme ────────────────────────────────────────────────────────────────
@@ -83,9 +84,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // When the user changes quality, rebuild the proxy download link
         qualityDropdown?.addEventListener('change', (e) => {
             const selected = currentMediaData?.media?.find(m => m.quality === e.target.value);
-            if (selected) downloadBtn.href = selected.url;
+            if (selected) {
+                const proxyLink = `${PROXY_URL}?video_url=${encodeURIComponent(selected.url)}&filename=${encodeURIComponent('twitter_video.mp4')}`;
+                downloadBtn.href = proxyLink;
+            }
         });
 
         form.addEventListener('submit', async (e) => {
@@ -150,7 +155,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 qualityDropdown.appendChild(option);
             });
 
-            if (sortedMedia.length > 0) downloadBtn.href = sortedMedia[0].url;
+            // Set the download button to the proxy link for the highest quality
+            if (sortedMedia.length > 0) {
+                const proxyLink = `${PROXY_URL}?video_url=${encodeURIComponent(sortedMedia[0].url)}&filename=${encodeURIComponent('twitter_video.mp4')}`;
+                downloadBtn.href = proxyLink;
+            }
 
             if (sortedMedia.length > 1) {
                 const listCard = document.createElement('div');
@@ -160,7 +169,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 ul.className = 'media-list';
                 sortedMedia.forEach(m => {
                     const li = document.createElement('li');
-                    li.innerHTML = `<a href="${m.url}" download>${m.quality}${m.quality.includes('p') ? '' : 'p'} — ${m.type}</a>`;
+                    const proxyLink = `${PROXY_URL}?video_url=${encodeURIComponent(m.url)}&filename=${encodeURIComponent('twitter_video.mp4')}`;
+                    li.innerHTML = `<a href="${proxyLink}" download>${m.quality}${m.quality.includes('p') ? '' : 'p'} — ${m.type}</a>`;
                     ul.appendChild(li);
                 });
                 listCard.appendChild(ul);
