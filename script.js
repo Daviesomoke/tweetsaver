@@ -70,19 +70,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const thumbnailImg    = document.getElementById('thumbnail-img');
         const qualityDropdown = document.getElementById('quality-dropdown');
         const downloadBtn     = document.getElementById('download-btn');
-        const copyLinkBtn     = document.getElementById('copy-link-btn');
+        // copyLinkBtn removed
 
         let currentMediaData = null;
 
-        copyLinkBtn?.addEventListener('click', async () => {
-            try {
-                await navigator.clipboard.writeText(urlInput.value);
-                copyLinkBtn.textContent = 'Copied!';
-                setTimeout(() => { copyLinkBtn.textContent = 'Copy Link'; }, 2000);
-            } catch {
-                alert('Could not copy — please copy the URL manually.');
-            }
-        });
+        // No copy link functionality anymore
 
         // When the user changes quality, rebuild the proxy download link
         qualityDropdown?.addEventListener('change', (e) => {
@@ -143,31 +135,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            // Sort qualities from highest to lowest
             const sortedMedia = [...data.media].sort((a, b) => parseInt(b.quality) - parseInt(a.quality));
+
+            // Limit to only 3 versions: highest, a middle one, lowest
+            const count = sortedMedia.length;
+            let displayMedia = [];
+            if (count <= 3) {
+                displayMedia = sortedMedia;
+            } else {
+                const middleIndex = Math.floor((count - 1) / 2);
+                displayMedia = [sortedMedia[0], sortedMedia[middleIndex], sortedMedia[count - 1]];
+            }
 
             thumbnailImg.src = data.thumbnail || 'https://placehold.co/480x270?text=No+Preview';
 
+            // Populate the quality dropdown with the limited selection
             qualityDropdown.innerHTML = '';
-            sortedMedia.forEach((m) => {
+            displayMedia.forEach((m) => {
                 const option = document.createElement('option');
                 option.value = m.quality;
                 option.textContent = `${m.quality}${m.quality.includes('p') ? '' : 'p'} — ${m.type.toUpperCase()}`;
                 qualityDropdown.appendChild(option);
             });
 
-            // Set the download button to the proxy link for the highest quality
-            if (sortedMedia.length > 0) {
-                const proxyLink = `${PROXY_URL}?video_url=${encodeURIComponent(sortedMedia[0].url)}&filename=${encodeURIComponent('twitter_video.mp4')}`;
+            // Set the download button to the highest quality of the limited list
+            if (displayMedia.length > 0) {
+                const proxyLink = `${PROXY_URL}?video_url=${encodeURIComponent(displayMedia[0].url)}&filename=${encodeURIComponent('twitter_video.mp4')}`;
                 downloadBtn.href = proxyLink;
             }
 
-            if (sortedMedia.length > 1) {
+            // Show the extra card only if there are at least 2 options
+            if (displayMedia.length > 1) {
                 const listCard = document.createElement('div');
                 listCard.className = 'card extra-media-card';
                 listCard.innerHTML = '<h3>All Available Qualities</h3>';
                 const ul = document.createElement('ul');
                 ul.className = 'media-list';
-                sortedMedia.forEach(m => {
+                displayMedia.forEach(m => {
                     const li = document.createElement('li');
                     const proxyLink = `${PROXY_URL}?video_url=${encodeURIComponent(m.url)}&filename=${encodeURIComponent('twitter_video.mp4')}`;
                     li.innerHTML = `<a href="${proxyLink}" download>${m.quality}${m.quality.includes('p') ? '' : 'p'} — ${m.type}</a>`;
