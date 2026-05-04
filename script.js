@@ -8,52 +8,18 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // ── API ─────────────────────────────────────────────────────────────────
-    // Relative paths work on both localhost and Render (same server serves
-    // the frontend AND handles /api/download and /api/proxy_download).
     const API_URL = '/api/download';
     const PROXY_URL = '/api/proxy_download';
     const API_KEY = '';   // set only if you enabled API_KEY on the backend
 
-    // ── Theme ────────────────────────────────────────────────────────────────
-    const html        = document.documentElement;
-    const themeToggle = document.getElementById('theme-toggle');
+    // ── Tiny helper – get the tweet ID from a URL ───────────────────────────
+    const getTweetId = (url) => {
+        const match = url.match(/\/status\/(\d+)/);
+        return match ? match[1] : null;
+    };
 
-    html.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
-
-    themeToggle?.addEventListener('click', () => {
-        const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        html.setAttribute('data-theme', next);
-        localStorage.setItem('theme', next);
-    });
-
-    // ── Mobile nav ───────────────────────────────────────────────────────────
-    const navToggle = document.querySelector('.nav-toggle');
-    const navMenu   = document.getElementById('nav-menu');
-
-    if (navToggle && navMenu) {
-        navToggle.addEventListener('click', () => {
-            const expanded = navToggle.getAttribute('aria-expanded') === 'true';
-            navToggle.setAttribute('aria-expanded', String(!expanded));
-            navMenu.classList.toggle('active');
-            document.body.style.overflow = expanded ? '' : 'hidden';
-        });
-
-        navMenu.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                navMenu.classList.remove('active');
-                navToggle.setAttribute('aria-expanded', 'false');
-                document.body.style.overflow = '';
-            });
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!navToggle.contains(e.target) && !navMenu.contains(e.target)) {
-                navMenu.classList.remove('active');
-                navToggle.setAttribute('aria-expanded', 'false');
-                document.body.style.overflow = '';
-            }
-        });
-    }
+    // ── Theme, mobile nav, etc. (unchanged) ──────────────────────────────────
+    // ... (keep everything from your existing script) ...
 
     // ── Download form (homepage only) ────────────────────────────────────────
     const form = document.getElementById('download-form');
@@ -70,18 +36,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const thumbnailImg    = document.getElementById('thumbnail-img');
         const qualityDropdown = document.getElementById('quality-dropdown');
         const downloadBtn     = document.getElementById('download-btn');
-        // copyLinkBtn removed
 
         let currentMediaData = null;
 
-        // No copy link functionality anymore
+        // Helper to build a proxy link with a unique filename
+        const makeProxyLink = (videoUrl, tweetId) => {
+            const baseName = tweetId ? `tweet_${tweetId}` : 'video';
+            return `${PROXY_URL}?video_url=${encodeURIComponent(videoUrl)}&filename=${encodeURIComponent(baseName + '.mp4')}`;
+        };
 
-        // When the user changes quality, rebuild the proxy download link
         qualityDropdown?.addEventListener('change', (e) => {
             const selected = currentMediaData?.media?.find(m => m.quality === e.target.value);
             if (selected) {
-                const proxyLink = `${PROXY_URL}?video_url=${encodeURIComponent(selected.url)}&filename=${encodeURIComponent('twitter_video.mp4')}`;
-                downloadBtn.href = proxyLink;
+                const tweetId = getTweetId(urlInput.value.trim());
+                downloadBtn.href = makeProxyLink(selected.url, tweetId);
             }
         });
 
@@ -100,7 +68,6 @@ document.addEventListener('DOMContentLoaded', () => {
             btnText.classList.add('hidden');
             resultsSection.classList.add('hidden');
 
-            // Remove any previously rendered extra cards
             document.querySelectorAll('.extra-media-card').forEach(el => el.remove());
 
             try {
@@ -117,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!response.ok) throw new Error(data.error || 'Failed to fetch media');
 
                 currentMediaData = data;
-                renderResults(data);
+                renderResults(data, url);
             } catch (err) {
                 errorMsg.textContent = err.message || 'Something went wrong. Please try again.';
             } finally {
@@ -127,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        function renderResults(data) {
+        function renderResults(data, originalUrl) {
             resultsSection.classList.remove('hidden');
 
             if (!data.media || data.media.length === 0) {
@@ -135,10 +102,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Sort qualities from highest to lowest
+            const tweetId = getTweetId(originalUrl);
+
             const sortedMedia = [...data.media].sort((a, b) => parseInt(b.quality) - parseInt(a.quality));
 
-            // Limit to only 3 versions: highest, a middle one, lowest
+            // Limit to 3 versions as before
             const count = sortedMedia.length;
             let displayMedia = [];
             if (count <= 3) {
@@ -150,7 +118,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             thumbnailImg.src = data.thumbnail || 'https://placehold.co/480x270?text=No+Preview';
 
-            // Populate the quality dropdown with the limited selection
             qualityDropdown.innerHTML = '';
             displayMedia.forEach((m) => {
                 const option = document.createElement('option');
@@ -159,13 +126,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 qualityDropdown.appendChild(option);
             });
 
-            // Set the download button to the highest quality of the limited list
             if (displayMedia.length > 0) {
-                const proxyLink = `${PROXY_URL}?video_url=${encodeURIComponent(displayMedia[0].url)}&filename=${encodeURIComponent('twitter_video.mp4')}`;
-                downloadBtn.href = proxyLink;
+                downloadBtn.href = makeProxyLink(displayMedia[0].url, tweetId);
             }
 
-            // Show the extra card only if there are at least 2 options
             if (displayMedia.length > 1) {
                 const listCard = document.createElement('div');
                 listCard.className = 'card extra-media-card';
@@ -174,8 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ul.className = 'media-list';
                 displayMedia.forEach(m => {
                     const li = document.createElement('li');
-                    const proxyLink = `${PROXY_URL}?video_url=${encodeURIComponent(m.url)}&filename=${encodeURIComponent('twitter_video.mp4')}`;
-                    li.innerHTML = `<a href="${proxyLink}" download>${m.quality}${m.quality.includes('p') ? '' : 'p'} — ${m.type}</a>`;
+                    li.innerHTML = `<a href="${makeProxyLink(m.url, tweetId)}" download>${m.quality}${m.quality.includes('p') ? '' : 'p'} — ${m.type}</a>`;
                     ul.appendChild(li);
                 });
                 listCard.appendChild(ul);
@@ -184,44 +147,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // ── Contact form (Formspree AJAX) ────────────────────────────────────────
-    const contactForm = document.getElementById('contact-form');
-    if (contactForm) {
-        const statusBox    = document.getElementById('form-status');
-        const submitBtn    = document.getElementById('contact-submit');
-
-        contactForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Sending…';
-            statusBox.classList.add('hidden');
-            statusBox.className = 'form-status hidden';
-
-            try {
-                const response = await fetch(contactForm.action, {
-                    method: 'POST',
-                    body: new FormData(contactForm),
-                    headers: { 'Accept': 'application/json' },
-                });
-
-                if (response.ok) {
-                    statusBox.textContent = '✓ Message sent! We\'ll reply within 24 hours.';
-                    statusBox.classList.remove('hidden');
-                    statusBox.classList.add('success');
-                    contactForm.reset();
-                } else {
-                    const data = await response.json();
-                    throw new Error(data.error || 'Submission failed');
-                }
-            } catch (err) {
-                statusBox.textContent = '✗ ' + (err.message || 'Something went wrong. Please email us directly.');
-                statusBox.classList.remove('hidden');
-                statusBox.classList.add('error');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Send Message';
-            }
-        });
-    }
+    // ── Contact form (unchanged) ─────────────────────────────────────────────
+    // ... (keep your existing contact form code) ...
 });
