@@ -5,13 +5,60 @@
 
 
 
+
 document.addEventListener('DOMContentLoaded', () => {
 
     // ── API ─────────────────────────────────────────────────────────────────
-    const API_URL = 'https://tweetsaver-api.onrender.com/api/download';
-    const PROXY_URL = 'https://tweetsaver-api.onrender.com/api/proxy_download';
-    
+    // Use the subdomain if available, otherwise fallback to direct Render URL.
+    const API_URL = 'https://api.x-downloadit.com/api/download';
+    const PROXY_URL = 'https://api.x-downloadit.com/api/proxy_download';
+    const FALLBACK_API_URL = 'https://tweetsaver-api.onrender.com/api/download';
+    const FALLBACK_PROXY_URL = 'https://tweetsaver-api.onrender.com/api/proxy_download';
+
     const API_KEY = '';   // set only if you enabled API_KEY on the backend
+
+    // ── Theme ────────────────────────────────────────────────────────────────
+    const html        = document.documentElement;
+    const themeToggle = document.getElementById('theme-toggle');
+
+    html.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
+
+    if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+            const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+        });
+    }
+
+    // ── Mobile nav ───────────────────────────────────────────────────────────
+    const navToggle = document.querySelector('.nav-toggle');
+    const navMenu   = document.getElementById('nav-menu');
+
+    if (navToggle && navMenu) {
+        navToggle.addEventListener('click', () => {
+            const expanded = navToggle.getAttribute('aria-expanded') === 'true';
+            navToggle.setAttribute('aria-expanded', String(!expanded));
+            navMenu.classList.toggle('active');
+            document.body.style.overflow = expanded ? '' : 'hidden';
+        });
+
+        navMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+                navToggle.setAttribute('aria-expanded', 'false');
+                document.body.style.overflow = '';
+            });
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!navToggle.contains(e.target) && !navMenu.contains(e.target)) {
+                navMenu.classList.remove('active');
+                navToggle.setAttribute('aria-expanded', 'false');
+                document.body.style.overflow = '';
+            }
+        });
+    }
 
     // ── Tiny helper – get the tweet ID from a URL ───────────────────────────
     const getTweetId = (url) => {
@@ -19,38 +66,38 @@ document.addEventListener('DOMContentLoaded', () => {
         return match ? match[1] : null;
     };
 
-    // ── Theme, mobile nav, etc. (unchanged) ──────────────────────────────────
-    // ... (keep everything from your existing script) ...
-
     // ── Download form (homepage only) ────────────────────────────────────────
     const form = document.getElementById('download-form');
     if (form) {
         const isValidTweetUrl = (url) =>
             /^https?:\/\/(www\.)?(twitter\.com|x\.com)\/[a-zA-Z0-9_]+\/status\/\d+(\?.*)?$/.test(url);
 
-        const urlInput = document.getElementById('tweet-url');
-        const errorMsg = document.getElementById('error-msg');
-        const submitBtn = document.getElementById('submit-btn');
-        const spinner = submitBtn.querySelector('.spinner');
-        const btnText = submitBtn.querySelector('.btn-text');
-        const resultsSection = document.getElementById('results-section');
-        const thumbnailImg = document.getElementById('thumbnail-img');
+        const urlInput        = document.getElementById('tweet-url');
+        const errorMsg        = document.getElementById('error-msg');
+        const submitBtn       = document.getElementById('submit-btn');
+        const spinner         = submitBtn.querySelector('.spinner');
+        const btnText         = submitBtn.querySelector('.btn-text');
+        const resultsSection  = document.getElementById('results-section');
+        const thumbnailImg    = document.getElementById('thumbnail-img');
         const qualityDropdown = document.getElementById('quality-dropdown');
-        const downloadBtn = document.getElementById('download-btn');
+        const downloadBtn     = document.getElementById('download-btn');
 
         let currentMediaData = null;
 
-        // Helper to build a proxy link with a unique filename
-        const makeProxyLink = (videoUrl, tweetId) => {
+        const makeProxyLink = (videoUrl, tweetId, useFallback = false) => {
             const baseName = tweetId ? `tweet_${tweetId}` : 'video';
-            return `${PROXY_URL}?video_url=${encodeURIComponent(videoUrl)}&filename=${encodeURIComponent(baseName + '.mp4')}`;
+            const proxy = useFallback ? FALLBACK_PROXY_URL : PROXY_URL;
+            return `${proxy}?video_url=${encodeURIComponent(videoUrl)}&filename=${encodeURIComponent(baseName + '.mp4')}`;
         };
+
+        const getApiUrl = (useFallback) => useFallback ? FALLBACK_API_URL : API_URL;
 
         qualityDropdown?.addEventListener('change', (e) => {
             const selected = currentMediaData?.media?.find(m => m.quality === e.target.value);
             if (selected) {
                 const tweetId = getTweetId(urlInput.value.trim());
-                downloadBtn.href = makeProxyLink(selected.url, tweetId);
+                // We don't know if fallback is needed here, just use current setting
+                downloadBtn.href = makeProxyLink(selected.url, tweetId, currentMediaData?.useFallback);
             }
         });
 
@@ -71,21 +118,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
             document.querySelectorAll('.extra-media-card').forEach(el => el.remove());
 
-            try {
+            // Try the subdomain first, if it fails, use fallback
+            let apiUrl = API_URL;
+            let useFallback = false;
+
+            const fetchMedia = async (urlToUse) => {
                 const headers = { 'Content-Type': 'application/json' };
                 if (API_KEY) headers['X-API-Key'] = API_KEY;
-
-                const response = await fetch(API_URL, {
+                const response = await fetch(urlToUse, {
                     method: 'POST',
                     headers,
                     body: JSON.stringify({ url }),
                 });
-
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.error || 'Failed to fetch media');
+                return data;
+            };
+
+            try {
+                let data;
+                try {
+                    data = await fetchMedia(apiUrl);
+                } catch (firstError) {
+                    // If first attempt fails (e.g., subdomain not ready), try fallback
+                    console.warn('Primary API failed, trying fallback...');
+                    apiUrl = FALLBACK_API_URL;
+                    useFallback = true;
+                    data = await fetchMedia(apiUrl);
+                }
 
                 currentMediaData = data;
-                renderResults(data, url);
+                currentMediaData.useFallback = useFallback;   // remember for later
+                renderResults(data, url, useFallback);
             } catch (err) {
                 errorMsg.textContent = err.message || 'Something went wrong. Please try again.';
             } finally {
@@ -95,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        function renderResults(data, originalUrl) {
+        function renderResults(data, originalUrl, useFallback) {
             resultsSection.classList.remove('hidden');
 
             if (!data.media || data.media.length === 0) {
@@ -107,7 +171,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const sortedMedia = [...data.media].sort((a, b) => parseInt(b.quality) - parseInt(a.quality));
 
-            // Limit to 3 versions as before
             const count = sortedMedia.length;
             let displayMedia = [];
             if (count <= 3) {
@@ -128,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (displayMedia.length > 0) {
-                downloadBtn.href = makeProxyLink(displayMedia[0].url, tweetId);
+                downloadBtn.href = makeProxyLink(displayMedia[0].url, tweetId, useFallback);
             }
 
             if (displayMedia.length > 1) {
@@ -139,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ul.className = 'media-list';
                 displayMedia.forEach(m => {
                     const li = document.createElement('li');
-                    li.innerHTML = `<a href="${makeProxyLink(m.url, tweetId)}" download>${m.quality}${m.quality.includes('p') ? '' : 'p'} — ${m.type}</a>`;
+                    li.innerHTML = `<a href="${makeProxyLink(m.url, tweetId, useFallback)}" download>${m.quality}${m.quality.includes('p') ? '' : 'p'} — ${m.type}</a>`;
                     ul.appendChild(li);
                 });
                 listCard.appendChild(ul);
@@ -148,6 +211,44 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // ── Contact form (unchanged) ─────────────────────────────────────────────
-    // ... (keep your existing contact form code) ...
+    // ── Contact form (Formspree AJAX) ────────────────────────────────────────
+    const contactForm = document.getElementById('contact-form');
+    if (contactForm) {
+        const statusBox    = document.getElementById('form-status');
+        const submitBtn    = document.getElementById('contact-submit');
+
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending…';
+            statusBox.classList.add('hidden');
+            statusBox.className = 'form-status hidden';
+
+            try {
+                const response = await fetch(contactForm.action, {
+                    method: 'POST',
+                    body: new FormData(contactForm),
+                    headers: { 'Accept': 'application/json' },
+                });
+
+                if (response.ok) {
+                    statusBox.textContent = '✓ Message sent! We\'ll reply within 24 hours.';
+                    statusBox.classList.remove('hidden');
+                    statusBox.classList.add('success');
+                    contactForm.reset();
+                } else {
+                    const data = await response.json();
+                    throw new Error(data.error || 'Submission failed');
+                }
+            } catch (err) {
+                statusBox.textContent = '✗ ' + (err.message || 'Something went wrong. Please email us directly.');
+                statusBox.classList.remove('hidden');
+                statusBox.classList.add('error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send Message';
+            }
+        });
+    }
 });
