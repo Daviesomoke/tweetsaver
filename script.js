@@ -8,6 +8,8 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // ── API ─────────────────────────────────────────────────────────────────
+    const API_URL = 'https://tweetsaver-api.onrender.com/api/download';
+    const PROXY_URL = 'https://tweetsaver-api.onrender.com/api/proxy_download';
     
     const API_KEY = '';   // set only if you enabled API_KEY on the backend
 
@@ -26,15 +28,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const isValidTweetUrl = (url) =>
             /^https?:\/\/(www\.)?(twitter\.com|x\.com)\/[a-zA-Z0-9_]+\/status\/\d+(\?.*)?$/.test(url);
 
-        const urlInput        = document.getElementById('tweet-url');
-        const errorMsg        = document.getElementById('error-msg');
-        const submitBtn       = document.getElementById('submit-btn');
-        const spinner         = submitBtn.querySelector('.spinner');
-        const btnText         = submitBtn.querySelector('.btn-text');
-        const resultsSection  = document.getElementById('results-section');
-        const thumbnailImg    = document.getElementById('thumbnail-img');
+        const urlInput = document.getElementById('tweet-url');
+        const errorMsg = document.getElementById('error-msg');
+        const submitBtn = document.getElementById('submit-btn');
+        const spinner = submitBtn.querySelector('.spinner');
+        const btnText = submitBtn.querySelector('.btn-text');
+        const resultsSection = document.getElementById('results-section');
+        const thumbnailImg = document.getElementById('thumbnail-img');
         const qualityDropdown = document.getElementById('quality-dropdown');
-        const downloadBtn     = document.getElementById('download-btn');
+        const downloadBtn = document.getElementById('download-btn');
 
         let currentMediaData = null;
 
