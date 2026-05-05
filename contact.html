@@ -5,6 +5,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 
@@ -55,20 +56,12 @@
             <h1>Contact Us</h1>
             <p>Have a question, bug report, or suggestion? Fill in the form below and we'll reply within 24 hours.</p>
 
-            <!-- 
-                FORMSPREE SETUP (one-time, takes 2 minutes):
-                1. Go to https://formspree.io and sign up free
-                2. Click "New Form", name it "VideoXSaver Contact"
-                3. Copy your form endpoint — looks like: https://formspree.io/f/abcdefgh
-                4. Replace YOUR_FORM_ID below with the letters after /f/
-            -->
             <form id="contact-form" action="https://formspree.io/f/xkoyokar" method="POST">
                 <input type="text"   name="name"    placeholder="Your name"     required>
                 <input type="email"  name="email"   placeholder="Email address" required>
                 <input type="text"   name="subject" placeholder="Subject"       required>
                 <textarea            name="message" rows="5" placeholder="Your message" required></textarea>
 
-                <!-- Honeypot spam trap — hidden from humans, bots fill it -->
                 <input type="text" name="_gotcha" style="display:none">
 
                 <div id="form-status" class="form-status hidden"></div>
@@ -86,9 +79,14 @@
             <a href="/about.html">About</a>
             <a href="/contact.html">Contact</a>
         </div>
-            <a href="/about.html">About</a>
-            <a href="/about.html">About</a>
-        <p>© 2025 X-downloadit is Not affiliated with X Corp. &nbsp;|&nbsp; <a href="https://x.com/theparrotboss" target="_blank" rel="noopener">@theparrotboss</a></p>
+        <p>© 2025 X-downloadit is Not affiliated with X Corp. &nbsp;|&nbsp;
+            <a href="https://x.com/theparrotboss" target="_blank" rel="noopener" class="x-handle">
+                <svg width="16" height="16" viewBox="0 0 1200 1227" fill="currentColor" style="vertical-align: middle; margin-right: 0.2rem;">
+                    <path d="M714.163 519.284L1160.89 0H1055.03L667.137 450.887L357.328 0H0L468.492 681.821L0 1226.37H105.866L515.491 750.218L842.672 1226.37H1200L714.137 519.284H714.163ZM569.165 687.828L521.697 619.934L144.011 79.6944H306.615L611.412 515.685L658.88 583.579L1055.08 1150.3H892.476L569.165 687.854V687.828Z"></path>
+                </svg>
+                @theparrotboss
+            </a>
+        </p>
     </footer>
 
     <script src="/script.js" defer></script>
