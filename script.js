@@ -8,8 +8,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // ── API ─────────────────────────────────────────────────────────────────
-    const API_URL = '/api/download';
-    const PROXY_URL = '/api/proxy_download';
+    
     const API_KEY = '';   // set only if you enabled API_KEY on the backend
 
     // ── Tiny helper – get the tweet ID from a URL ───────────────────────────
