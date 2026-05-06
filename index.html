@@ -5,7 +5,6 @@
 
 
 
-
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 
@@ -13,32 +12,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="Download videos, GIFs and images from X (Twitter) posts. Free, fast and no account required.">
-    <meta name="keywords" content="Twitter video downloader, X downloader, save tweets, tweet video, GIF downloader">
+        content="Download videos, GIFs and images from X (Twitter) posts. Free, fast and no account required. X-Downloadit is the easiest Twitter video downloader online.">
+    <meta name="keywords" content="Twitter video downloader, X downloader, save tweets, tweet video, GIF downloader, download Twitter video, X video saver">
     <meta name="author" content="The X-Downloadit Team">
+    <link rel="canonical" href="https://x-downloadit.com/">
 
     <!-- Open Graph -->
-    <meta property="og:title" content="X-Downloadit - X / Twitter Video Downloader">
+    <meta property="og:title" content="X-Downloadit - Free X / Twitter Video Downloader">
     <meta property="og:description"
         content="Download any video, GIF or image from X posts instantly. Free and no account needed.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://x-downloadit.com">
+    <meta property="og:url" content="https://x-downloadit.com/">
     <meta property="og:image" content="https://x-downloadit.com/og-image.jpg">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@theparrotboss">
-    <meta name="twitter:title" content="X-Downloadit - X / Twitter Video Downloader">
+    <meta name="twitter:title" content="X-Downloadit - Free X / Twitter Video Downloader">
     <meta name="twitter:description" content="Download any video, GIF or image from X posts instantly.">
     <meta name="twitter:image" content="https://x-downloadit.com/og-image.jpg">
 
-    <title>X-Downloadit - Download X (Twitter) Videos & Media</title>
+    <title>X-Downloadit - Free X / Twitter Video Downloader | Save Videos & GIFs</title>
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "X-Downloadit",
+      "url": "https://x-downloadit.com",
+      "description": "Download videos, GIFs and images from X (Twitter) posts. Free, fast and no account required.",
+      "applicationCategory": "Multimedia",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Organization",
+        "name": "The X-Downloadit Team"
+      }
+    }
+    </script>
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="alternate icon" href="/favicon.ico">
 
     <link rel="stylesheet" href="/style.css">
+
+
+
+
+    <link rel="manifest" href="/manifest.json">
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js');
+        }
+    </script>
+
+
+
 </head>
 
 <body>
@@ -97,14 +132,14 @@
             <div class="media-preview card" id="media-preview-card">
                 <div class="preview-grid">
                     <div class="thumbnail-wrapper">
-                        <img id="thumbnail-img" src="" alt="Thumbnail preview">
+                        <img id="thumbnail-img" src="" alt="Thumbnail preview of the selected media">
                         <div class="video-actions">
                             <!-- Copy Link button removed -->
                             <a id="download-btn" class="btn btn-primary" href="#" download>Download</a>
                         </div>
                     </div>
                     <div class="quality-selector" id="quality-selector">
-                        <label>Available qualities:</label>
+                        <label for="quality-dropdown">Available qualities:</label>
                         <select id="quality-dropdown"></select>
                     </div>
                 </div>
