@@ -5,7 +5,6 @@
 
 
 
-
 document.addEventListener('DOMContentLoaded', () => {
 
     // ── API ─────────────────────────────────────────────────────────────────
@@ -18,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const API_KEY = '';   // set only if you enabled API_KEY on the backend
 
     // ── Theme ────────────────────────────────────────────────────────────────
-    const html        = document.documentElement;
+    const html = document.documentElement;
     const themeToggle = document.getElementById('theme-toggle');
 
     html.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
@@ -33,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Mobile nav ───────────────────────────────────────────────────────────
     const navToggle = document.querySelector('.nav-toggle');
-    const navMenu   = document.getElementById('nav-menu');
+    const navMenu = document.getElementById('nav-menu');
 
     if (navToggle && navMenu) {
         navToggle.addEventListener('click', () => {
@@ -72,15 +71,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const isValidTweetUrl = (url) =>
             /^https?:\/\/(www\.)?(twitter\.com|x\.com)\/[a-zA-Z0-9_]+\/status\/\d+(\?.*)?$/.test(url);
 
-        const urlInput        = document.getElementById('tweet-url');
-        const errorMsg        = document.getElementById('error-msg');
-        const submitBtn       = document.getElementById('submit-btn');
-        const spinner         = submitBtn.querySelector('.spinner');
-        const btnText         = submitBtn.querySelector('.btn-text');
-        const resultsSection  = document.getElementById('results-section');
-        const thumbnailImg    = document.getElementById('thumbnail-img');
+        const urlInput = document.getElementById('tweet-url');
+        const errorMsg = document.getElementById('error-msg');
+        const submitBtn = document.getElementById('submit-btn');
+        const spinner = submitBtn.querySelector('.spinner');
+        const btnText = submitBtn.querySelector('.btn-text');
+        const resultsSection = document.getElementById('results-section');
+        const thumbnailImg = document.getElementById('thumbnail-img');
         const qualityDropdown = document.getElementById('quality-dropdown');
-        const downloadBtn     = document.getElementById('download-btn');
+        const downloadBtn = document.getElementById('download-btn');
 
         let currentMediaData = null;
 
@@ -103,7 +102,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const url = urlInput.value.trim();
+            // ✨ Clean the URL: remove temporary query parameters so old copied links still work
+            let url = urlInput.value.trim();
+            try {
+                const parsed = new URL(url);
+                // Only keep the canonical path (e.g., /username/status/123456789)
+                url = `https://${parsed.hostname}${parsed.pathname}`;
+            } catch (_) {
+                // If it can't be parsed, leave the original (validation will catch it)
+            }
 
             if (!isValidTweetUrl(url)) {
                 errorMsg.textContent = 'Please enter a valid X / Twitter post URL (e.g., https://x.com/user/status/123456)';
@@ -214,8 +221,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Contact form (Formspree AJAX) ────────────────────────────────────────
     const contactForm = document.getElementById('contact-form');
     if (contactForm) {
-        const statusBox    = document.getElementById('form-status');
-        const submitBtn    = document.getElementById('contact-submit');
+        const statusBox = document.getElementById('form-status');
+        const submitBtn = document.getElementById('contact-submit');
 
         contactForm.addEventListener('submit', async (e) => {
             e.preventDefault();

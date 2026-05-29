@@ -4,7 +4,6 @@
 
 
 
-
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 
@@ -13,7 +12,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
         content="Download videos, GIFs and images from X (Twitter) posts. Free, fast and no account required. X-Downloadit is the easiest Twitter video downloader online.">
-    <meta name="keywords" content="Twitter video downloader, X downloader, save tweets, tweet video, GIF downloader, download Twitter video, X video saver">
+    <meta name="keywords"
+        content="Twitter video downloader, X downloader, save tweets, tweet video, GIF downloader, download Twitter video, X video saver">
     <meta name="author" content="The X-Downloadit Team">
     <link rel="canonical" href="https://x-downloadit.com/">
 
@@ -24,6 +24,8 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://x-downloadit.com/">
     <meta property="og:image" content="https://x-downloadit.com/og-image.jpg">
+
+    <meta name="google-site-verification" content="f4LJa_2WY8JVYO5A8k2v7L38MeHUF52Av2_j58Jzf-4" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
@@ -60,11 +62,11 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="alternate icon" href="/favicon.ico">
 
+    <!-- Preload critical CSS so it loads at the highest priority -->
+    <link rel="preload" href="/style.css" as="style">
     <link rel="stylesheet" href="/style.css">
 
-
-
-
+    <!-- PWA manifest and service worker (unchanged) -->
     <link rel="manifest" href="/manifest.json">
     <script>
         if ('serviceWorker' in navigator) {
@@ -72,8 +74,8 @@
         }
     </script>
 
-
-
+    <!-- Monetag verification – no change -->
+    <meta name="monetag" content="98522c066054af12992b3d4a2103e7c2">
 </head>
 
 <body>
@@ -146,9 +148,10 @@
             </div>
             <ul id="multiple-media-list" class="media-list"></ul>
         </section>
-
-       
     </main>
+
+    <!-- Deferred ad container: loads only after the page is fully rendered -->
+    <div id="ad-container" style="display: flex; justify-content: center; width: 100%; margin: 1.5rem 0;"></div>
 
     <footer class="main-footer container">
         <div class="footer-links">
@@ -159,18 +162,48 @@
         </div>
         <p>© 2025 X-Downloadit is Not affiliated with X Corp. &nbsp;|&nbsp;
             <a href="https://x.com/theparrotboss" target="_blank" rel="noopener" class="x-handle">
-                <svg width="16" height="16" viewBox="0 0 1200 1227" fill="currentColor" style="vertical-align: middle; margin-right: 0.2rem;">
-                    <path d="M714.163 519.284L1160.89 0H1055.03L667.137 450.887L357.328 0H0L468.492 681.821L0 1226.37H105.866L515.491 750.218L842.672 1226.37H1200L714.137 519.284H714.163ZM569.165 687.828L521.697 619.934L144.011 79.6944H306.615L611.412 515.685L658.88 583.579L1055.08 1150.3H892.476L569.165 687.854V687.828Z"></path>
+                <svg width="16" height="16" viewBox="0 0 1200 1227" fill="currentColor"
+                    style="vertical-align: middle; margin-right: 0.2rem;">
+                    <path
+                        d="M714.163 519.284L1160.89 0H1055.03L667.137 450.887L357.328 0H0L468.492 681.821L0 1226.37H105.866L515.491 750.218L842.672 1226.37H1200L714.137 519.284H714.163ZM569.165 687.828L521.697 619.934L144.011 79.6944H306.615L611.412 515.685L658.88 583.579L1055.08 1150.3H892.476L569.165 687.854V687.828Z">
+                    </path>
                 </svg>
                 @theparrotboss
             </a>
         </p>
     </footer>
 
+    <!-- Core site script (already deferred via 'defer' attribute or placed at end) -->
     <script src="/script.js"></script>
 
+    <!-- Deferred ad loading – does NOT block page rendering -->
+    <script>
+        window.addEventListener('load', function () {
+            // Monetag vignette & tag
+            (function (s) { s.dataset.zone = '10975773', s.src = 'https://n6wxm.com/vignette.min.js' })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')));
 
-    <script src="https://pl29343481.profitablecpmratenetwork.com/05/88/32/0588322bd63d7731ed2f4b64ba1996d8.js"></script>
+            // Profitube script
+            var s = document.createElement('script');
+            s.src = 'https://5gvci.com/act/files/tag.min.js?z=10975889';
+            s.setAttribute('data-cfasync', 'false');
+            s.async = true;
+            document.body.appendChild(s);
+
+            // Centered ad unit
+            var adDiv = document.getElementById('ad-container');
+            if (adDiv) {
+                var script1 = document.createElement('script');
+                script1.textContent = 'atOptions = { \'key\': \'b4069b7a2631d85e25bfd671e55de0d5\', \'format\': \'iframe\', \'height\': 50, \'width\': 320, \'params\': {} };';
+                adDiv.appendChild(script1);
+                var script2 = document.createElement('script');
+                script2.src = 'https://www.highperformanceformat.com/b4069b7a2631d85e25bfd671e55de0d5/invoke.js';
+                adDiv.appendChild(script2);
+            }
+        });
+
+        // Warm-up ping to prevent Render cold start (silent, no impact on UX)
+        fetch('https://tweetsaver-api.onrender.com/health', { method: 'GET', cache: 'no-cache' }).catch(function () { });
+    </script>
 
 </body>
 
