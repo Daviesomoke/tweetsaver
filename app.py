@@ -5,6 +5,8 @@
 
 
 
+
+
 import os
 import re
 import logging
@@ -72,8 +74,30 @@ def load_cookies():
     return session
 
 
-def fetch_media_info_real(url: str) -> dict:
-    """Use yt-dlp with an authenticated cookies file."""
+def _extract_media_list(info: dict) -> list[dict]:
+    """Shared formatting logic so list+download stay consistent."""
+    media_list = []
+    if 'formats' in info:
+        for f in info['formats']:
+            if f.get('vcodec') != 'none' or f.get('acodec') != 'none':
+                quality = f.get('height') or f.get('format_note') or 'unknown'
+                media_list.append({
+                    'quality': f'{quality}p' if str(quality).isdigit() else str(quality),
+                    'url': f['url'],
+                    'type': 'video' if f.get('vcodec') != 'none' else 'audio',
+                })
+    elif 'thumbnail' in info:   # image-only post
+        media_list.append({
+            'quality': 'original',
+            'url': info['thumbnail'],
+            'type': 'image',
+        })
+    return media_list
+
+
+def resolve_tweet(url: str) -> dict:
+    """Run yt-dlp against a tweet URL and return the raw info dict (one fresh
+       extraction = one fresh set of signed CDN URLs)."""
     ydl_opts = {
         'quiet': True,
         'no_warnings': True,
@@ -83,29 +107,18 @@ def fetch_media_info_real(url: str) -> dict:
         info = ydl.extract_info(url, download=False)
         if 'entries' in info:       # playlist — take first item
             info = info['entries'][0]
+        return info
 
-        media_list = []
-        if 'formats' in info:
-            for f in info['formats']:
-                if f.get('vcodec') != 'none' or f.get('acodec') != 'none':
-                    quality = f.get('height') or f.get('format_note') or 'unknown'
-                    media_list.append({
-                        'quality': f'{quality}p' if str(quality).isdigit() else str(quality),
-                        'url': f['url'],
-                        'type': 'video' if f.get('vcodec') != 'none' else 'audio',
-                    })
-        elif 'thumbnail' in info:   # image-only post
-            media_list.append({
-                'quality': 'original',
-                'url': info['thumbnail'],
-                'type': 'image',
-            })
 
-        return {
-            'tweet_id': info.get('id') or extract_tweet_id(url),
-            'thumbnail': info.get('thumbnail', ''),
-            'media': media_list,
-        }
+def fetch_media_info_real(url: str) -> dict:
+    """Use yt-dlp with an authenticated cookies file."""
+    info = resolve_tweet(url)
+    media_list = _extract_media_list(info)
+    return {
+        'tweet_id': info.get('id') or extract_tweet_id(url),
+        'thumbnail': info.get('thumbnail', ''),
+        'media': media_list,
+    }
 
 
 def fetch_media_info_demo(url: str) -> dict:
@@ -167,48 +180,83 @@ def download():
         return jsonify({'error': 'Could not retrieve media. Please try again later.'}), 500
 
 
+def _stream_from_cdn(session, cdn_url: str, filename: str):
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Referer': 'https://twitter.com/',
+    }
+    resp = session.get(cdn_url, headers=headers, stream=True, timeout=30)
+    resp.raise_for_status()
+
+    cd = resp.headers.get('Content-Disposition', '')
+    if 'filename=' in cd:
+        import re as regex
+        fname = regex.findall('filename="?([^"]+)"?', cd)
+        if fname:
+            filename = fname[0]
+
+    def generate():
+        for chunk in resp.iter_content(chunk_size=8192):
+            if chunk:
+                yield chunk
+
+    return Response(
+        stream_with_context(generate()),
+        headers={
+            'Content-Disposition': f'attachment; filename="{filename}"',
+            'Content-Type': resp.headers.get('Content-Type', 'application/octet-stream'),
+        }
+    )
+
+
 @app.route('/api/proxy_download')
 def proxy_download():
     """Stream a video through the server using cookies, so the browser never touches
-       video.twimg.com directly."""
+       video.twimg.com directly.
+
+       IMPORTANT: Twitter's CDN URLs are short-lived signed URLs. If the browser
+       held onto a URL from an earlier /api/download call (e.g. user pasted several
+       tweet links before clicking Download on any of them), that URL may have
+       already expired by the time this route is hit. To make downloads reliable
+       regardless of how much time has passed or how many tweets were queued up,
+       this route re-resolves the ORIGINAL tweet URL fresh via yt-dlp whenever it's
+       provided, and only falls back to the (possibly stale) raw CDN url otherwise.
+    """
+    tweet_url = request.args.get('tweet_url')
+    quality = request.args.get('quality')
     video_url = request.args.get('video_url')
     filename = request.args.get('filename', 'twitter_video.mp4')
 
-    if not video_url:
-        return jsonify({'error': 'Missing video_url parameter'}), 400
+    if not tweet_url and not video_url:
+        return jsonify({'error': 'Missing tweet_url or video_url parameter'}), 400
 
     try:
         session = load_cookies()
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Referer': 'https://twitter.com/',
-        }
-        resp = session.get(video_url, headers=headers, stream=True, timeout=30)
-        resp.raise_for_status()
 
-        # Try to pick a better filename from the Content-Disposition header
-        cd = resp.headers.get('Content-Disposition', '')
-        if 'filename=' in cd:
-            import re as regex
-            fname = regex.findall('filename="?([^"]+)"?', cd)
-            if fname:
-                filename = fname[0]
+        if tweet_url:
+            # Fresh extraction = fresh signed CDN URL, every single time.
+            info = resolve_tweet(tweet_url)
+            media_list = _extract_media_list(info)
+            if not media_list:
+                return jsonify({'error': 'No downloadable media found in this tweet.'}), 404
 
-        def generate():
-            for chunk in resp.iter_content(chunk_size=8192):
-                if chunk:
-                    yield chunk
+            chosen = None
+            if quality:
+                chosen = next((m for m in media_list if m['quality'] == quality), None)
+            if not chosen:
+                # Best-effort: highest quality video, else first item
+                videos = [m for m in media_list if m['type'] == 'video']
+                chosen = (videos or media_list)[0]
 
-        return Response(
-            stream_with_context(generate()),
-            headers={
-                'Content-Disposition': f'attachment; filename="{filename}"',
-                'Content-Type': resp.headers.get('Content-Type', 'application/octet-stream'),
-            }
-        )
+            return _stream_from_cdn(session, chosen['url'], filename)
+
+        # Fallback path: no tweet_url provided (e.g. older cached frontend) —
+        # try the raw URL directly, accepting it may have expired.
+        return _stream_from_cdn(session, video_url, filename)
+
     except Exception as e:
         app.logger.error('Proxy error: %s', e)
-        return jsonify({'error': 'Failed to download video. The link may have expired.'}), 500
+        return jsonify({'error': 'Failed to download video. The link may have expired — please paste the tweet link again.'}), 500
 
 
 # ---------- Health check (useful for Render) ----------

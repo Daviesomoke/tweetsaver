@@ -5,6 +5,9 @@
 
 
 
+
+
+
 document.addEventListener('DOMContentLoaded', () => {
 
     // ── API ─────────────────────────────────────────────────────────────────
@@ -83,20 +86,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let currentMediaData = null;
 
-        const makeProxyLink = (videoUrl, tweetId, useFallback = false) => {
+        const makeProxyLink = (quality, tweetUrl, tweetId, useFallback = false) => {
             const baseName = tweetId ? `tweet_${tweetId}` : 'video';
             const proxy = useFallback ? FALLBACK_PROXY_URL : PROXY_URL;
-            return `${proxy}?video_url=${encodeURIComponent(videoUrl)}&filename=${encodeURIComponent(baseName + '.mp4')}`;
+            return `${proxy}?tweet_url=${encodeURIComponent(tweetUrl)}&quality=${encodeURIComponent(quality)}&filename=${encodeURIComponent(baseName + '.mp4')}`;
         };
 
         const getApiUrl = (useFallback) => useFallback ? FALLBACK_API_URL : API_URL;
 
         qualityDropdown?.addEventListener('change', (e) => {
-            const selected = currentMediaData?.media?.find(m => m.quality === e.target.value);
-            if (selected) {
-                const tweetId = getTweetId(urlInput.value.trim());
-                // We don't know if fallback is needed here, just use current setting
-                downloadBtn.href = makeProxyLink(selected.url, tweetId, currentMediaData?.useFallback);
+            if (currentMediaData) {
+                downloadBtn.href = makeProxyLink(e.target.value, currentMediaData.tweetUrl, currentMediaData.tweet_id, currentMediaData.useFallback);
             }
         });
 
@@ -156,6 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 currentMediaData = data;
                 currentMediaData.useFallback = useFallback;   // remember for later
+                currentMediaData.tweetUrl = url;              // pin to THIS tweet, immune to later pastes
                 renderResults(data, url, useFallback);
             } catch (err) {
                 errorMsg.textContent = err.message || 'Something went wrong. Please try again.';
@@ -198,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (displayMedia.length > 0) {
-                downloadBtn.href = makeProxyLink(displayMedia[0].url, tweetId, useFallback);
+                downloadBtn.href = makeProxyLink(displayMedia[0].quality, originalUrl, tweetId, useFallback);
             }
 
             if (displayMedia.length > 1) {
@@ -209,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ul.className = 'media-list';
                 displayMedia.forEach(m => {
                     const li = document.createElement('li');
-                    li.innerHTML = `<a href="${makeProxyLink(m.url, tweetId, useFallback)}" download>${m.quality}${m.quality.includes('p') ? '' : 'p'} — ${m.type}</a>`;
+                    li.innerHTML = `<a href="${makeProxyLink(m.quality, originalUrl, tweetId, useFallback)}" download>${m.quality}${m.quality.includes('p') ? '' : 'p'} — ${m.type}</a>`;
                     ul.appendChild(li);
                 });
                 listCard.appendChild(ul);
