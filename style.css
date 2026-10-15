@@ -795,11 +795,144 @@ input::placeholder, textarea::placeholder { color: var(--text-3); }
 
 /* ── Responsive ──────────────────────────────────────────────────── */
 @media (max-width: 600px) {
-    .hero h1 { font-size: 1.45rem; }
-    .result-inner { flex-direction: column; }
-    .thumb-wrap { width: 100%; aspect-ratio: 16/9; }
-    .input-row { flex-direction: column; }
-    .btn-fetch { justify-content: center; }
+
+    /* ── Spacing ── */
+    main.container {
+        padding-top: 1.5rem;
+        padding-bottom: 2rem;
+    }
+
+    /* ── Hero ── */
+    .hero {
+        margin-bottom: 1.25rem;
+    }
+    .hero h1 {
+        font-size: 1.45rem;
+        letter-spacing: -0.3px;
+    }
+    .hero .subtitle {
+        font-size: 0.88rem;
+    }
+
+    /* ── Downloader panel ── */
+    .downloader-panel {
+        padding: 1rem;
+        border-radius: var(--radius);
+    }
+    .input-row {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .url-input {
+        font-size: 16px; /* prevents iOS auto-zoom */
+        padding: 0.85rem 0.9rem;
+    }
+    .btn-fetch {
+        width: 100%;
+        justify-content: center;
+        padding: 0.85rem 1rem;
+        font-size: 0.95rem;
+    }
+
+    /* ── Result card ── */
+    .result-card {
+        border-radius: var(--radius);
+    }
+    .result-inner {
+        flex-direction: column;
+        padding: 1rem;
+        gap: 0.85rem;
+    }
+    .thumb-wrap {
+        width: 100%;
+        aspect-ratio: 16/9;
+    }
+    .result-meta {
+        gap: 0.75rem;
+    }
+    .quality-pills {
+        gap: 0.5rem;
+    }
+    .quality-pill {
+        font-size: 0.82rem;
+        padding: 0.4rem 0.85rem; /* bigger touch target */
+        min-height: 36px;
+        display: inline-flex;
+        align-items: center;
+    }
+    .result-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .btn-download {
+        width: 100%;
+        justify-content: center;
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    /* ── Next bar ── */
+    .next-bar {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        padding: 0.75rem 0.85rem;
+    }
+    .next-bar input {
+        font-size: 16px; /* prevents iOS auto-zoom */
+        min-width: 0;
+        width: calc(100% - 2rem); /* full row minus icon */
+    }
+    .next-bar-icon {
+        /* push button to own row only when needed */
+        order: 0;
+    }
+    .next-bar input {
+        order: 1;
+        flex: 1 1 0;
+    }
+    .next-bar-btn {
+        order: 2;
+        flex-shrink: 0;
+        padding: 0.4rem 1rem;
+        font-size: 0.82rem;
+    }
+
+    /* ── Queue items ── */
+    .queue-item {
+        padding: 0.65rem 0.85rem;
+        gap: 0.5rem;
+    }
+    .queue-item-url {
+        font-size: 0.75rem;
+    }
+    .queue-item-label {
+        font-size: 0.7rem;
+    }
+
+    /* ── Generic card ── */
+    .card {
+        padding: 1.25rem;
+        border-radius: var(--radius);
+    }
+    .card h1 {
+        font-size: 1.3rem;
+    }
+
+    /* ── Contact form submit ── */
+    .btn-primary {
+        align-self: stretch;
+        text-align: center;
+        justify-content: center;
+        display: flex;
+    }
+
+    /* ── Footer ── */
+    .main-footer {
+        padding: 1.25rem 1rem;
+    }
+    .footer-links {
+        gap: 1rem;
+    }
 }
 
 /* ── Focus visible ───────────────────────────────────────────────── */
